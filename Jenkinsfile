@@ -23,6 +23,19 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Generate terraform.tfvars') {
+            steps {
+                script {
+                    writeFile file: 'infra/terraform.tfvars', text: """
+                    subscription_id = "${env.AZURE_SUBSCRIPTION_ID}"
+                    client_id       = "${env.AZURE_CLIENT_ID}"
+                    client_secret   = "${env.AZURE_CLIENT_SECRET}"
+                    tenant_id       = "${env.AZURE_TENANT_ID}"
+                    """
+                }
+                echo "File terraform.tfvars has been generated."
+            }
+        }
         stage('Terraform Init') {
             steps {
                 script {
@@ -36,7 +49,7 @@ pipeline {
             steps {
                 script {
                     dir('infra') {
-                        sh 'terraform plan -out=tfplan'
+                        sh 'terraform plan -var-file=terraform.tfvars -out=tfplan'
                     }
                 }
             }
