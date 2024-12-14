@@ -1,9 +1,23 @@
 pipeline {
     agent any
     environment {
-        AZURE_CREDENTIALS = credentials('azure-sp-credentials') 
+        AZURE_CLIENT_ID       = credentials('AZURE_CLIENT_ID')
+        AZURE_CLIENT_SECRET   = credentials('AZURE_CLIENT_SECRET')
+        AZURE_TENANT_ID       = credentials('AZURE_TENANT_ID')
+        AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
     }
     stages {
+        stage('Login to Azure') {
+            steps {
+                sh '''
+                az login --service-principal \
+                    -u $AZURE_CLIENT_ID \
+                    -p $AZURE_CLIENT_SECRET \
+                    --tenant $AZURE_TENANT_ID
+                az account set --subscription $AZURE_SUBSCRIPTION_ID
+                '''
+            }
+        }
         stage('Checkout Code') {
             steps {
                 checkout scm
